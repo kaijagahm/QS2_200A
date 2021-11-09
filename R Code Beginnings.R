@@ -25,13 +25,13 @@ population.data[1] <- initial.pop
 
 #i<-2
 for(i in 2:nyears){
-  current.pop<-population.data[i-1]
+  current.pop <- population.data[i-1] # previous year's population size
   
   # calculate number of active territories:
-  n.active <- floor(current.pop/2)
+  n.active <- floor(current.pop/2) # smallest whole number of territories
   
   # pick reproductive rate:
-  current.fecundity <- sample(fecundity, size = 1)
+  current.fecundity <- sample(fecundity, size = 1) # pick a reproductive rate at random from the ones observed
   
   # calculate number of young fledged:
   n.fledged <- current.fecundity*n.active
