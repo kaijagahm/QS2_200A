@@ -188,7 +188,8 @@ median(et) # now the median is lower, at 12.
 # 9. Is the basic simulation model actually completely density independent? hint: try calculating how many individuals are lost from the population each year (mortality + emigration), and produce a plot of this rate of loss against population density.
 
 #The basic simulation model is not actually completely density independent because, as shown above, the population will still fluctuate and decrease around carrying capacity (K). 
-
+ 
+# XXX need help figuring out if this code is right
 dataLong <- as.data.frame(data) %>%
   mutate(year = 1:nrow(.)) %>% # add a column for the years explicitly
   pivot_longer(cols = -year, names_to = "sim", values_to = "popSize") %>% # now that we've pivoted to long format, each row is a unique year*simulation combo, with one value for population size. 
@@ -209,7 +210,7 @@ dataLong %>%
   xlab("Population density")+
   ggtitle("Density-dependence of death/emigration")
 
-# It looks like the model is density-independent, or at least close? I'm not positive that I did this right.
+# XXX It looks like the model is density-independent, or at least close? I'm not positive that I did this right.
 
 # OPTIONAL:
 
