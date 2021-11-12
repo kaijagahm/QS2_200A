@@ -14,11 +14,13 @@ initial.pop <- K # the authors assume that the population basically sits at the 
 nyears <- 25 # the study happened over 10 years
 n.I <- 0 # number of immigrants
 
+years <- seq(1, nyears, 1) # create vector from 1:25
+
 ### define the model ####
 
 mod <- function(nyears, fecundity, s.A, s.J, samp = T, initial.pop = initial.pop){
   # set up data storage vectors
-  years <- seq(1, nyears, 1) # create vector from 1:25
+  years <- seq(1, nyears, 1)
   population.data <- rep(NA, nyears) # going to store the population size for each year
   
   # define the initial population size
@@ -78,6 +80,8 @@ nyears <- 1000
 nsims <- 1000
 data <- matrix(NA, nrow = nyears, ncol = nsims)
 
+years<-seq(1,nyears,1)
+
 # run the model 1000 times, storing each results vector in a new column of the `data` df
 for(i in 1:nsims){
   popData <- mod(nyears = nyears, fecundity = fecundity, s.A = s.A, s.J = s.J, 
@@ -91,7 +95,8 @@ head(data)
 
 # I made this plotting code into a function so we can use it over and over again.
 plotSims <- function(data){
-  plot(data[,1] ~ years,type='l',col=alpha('black',alpha=0.1),ylim=c(0,55),xlim=c(0,100))
+  plot(data[,1] ~ years,ylab="Population size", xlab="Years", main="Simulations of population growth over time",
+  type='l',col=alpha('black',alpha=0.1),ylim=c(0,55),xlim=c(0,100))
   for(j in 2:nsims){
     lines(data[,j]~years,type='l',col=alpha('black',alpha=0.1))
   }
@@ -121,7 +126,7 @@ getExtinctionTimes <- function(data){
 et <- getExtinctionTimes(data)
 
 # Figure #2 in Stacey & Taper 1992
-hist(et, breaks = seq(1, max(et), 2))
+hist(et, breaks = seq(1, max(et), 2), main= "Time to extinction", xlab="Years")
 
 median(et)
 
@@ -130,6 +135,9 @@ median(et)
 # Using the code above as a resource, address the following questions:
 
 # 7. Can you replicate their assessment of the effects of variability? (in particular, what happens if you remove the variability? pg. 21). Take the model above, and replace the random draws of s.A, s.J, and fecundity with their mean values. Run the simulation again. How does the distribution of extinction times change?
+
+# Yes, when variability is included, we can replicate their assessment and plot Figure 2 from Stacey & Taper 1992.
+# When we eliminate variability, all of the runs of the model return the same extinction time, but it's also higher than the median extinction time from the previous model with variability (16-17 years). Now the (single) extinction time is 27 years. 
 
 dataMean <- matrix(NA, nrow = nyears, ncol = nsims)
 
@@ -143,19 +151,15 @@ for(i in 1:nsims){
 
 head(dataMean)
 
-#### Visualize result: ####
+# Visualize results:
 plotSims(dataMean) # all the same line!
 
-#### Figure out time to extinction for each simulation: ####
+#Figure out time to extinction for each simulation:
 et <- getExtinctionTimes(dataMean)
-
-# Figure #2 in Stacey & Taper 1992
-hist(et, breaks = seq(1, max(et), 2)) # all the same extinction time
-
+hist(et, breaks = seq(1, max(et), 2), main= "Time to extinction", xlab="Years") # all the same extinction time
 median(et) # median of 27
 table(et) # all 27.
 
-# When we eliminate variability, all of the runs of the model return the same extinction time, but it's also higher than the median extinction time from the previous model (16-17 years). Now the (single) extinction time is 27 years. 
 
 # 8. Pick out one of the assumptions of the paper, change it, and describe/illustrate what happens.
 
@@ -173,23 +177,25 @@ for(i in 1:nsims){
 
 head(dataNew)
 
-#### Visualize result: ####
+#Visualize result:
 
 plotSims(dataNew)
 
-#### Figure out time to extinction for each simulation: ####
+#Figure out time to extinction for each simulation:
 et <- getExtinctionTimes(dataNew)
-
-# Figure #2 in Stacey & Taper 1992
-hist(et, breaks = seq(1, max(et), 2))
+hist(et, breaks = seq(1, max(et), 2), main= "Time to extinction", xlab="Years")
 median(et) # now the median is lower, at 12.
+
+# When the population starts at half its carrying capacity, its time to extinction becomes shorter.
 # The distribution is now more right-skewed than before, with a new median at 12 years instead of 16.
+
 
 # 9. Is the basic simulation model actually completely density independent? hint: try calculating how many individuals are lost from the population each year (mortality + emigration), and produce a plot of this rate of loss against population density.
 
 #The basic simulation model is not actually completely density independent because, as shown above, the population will still fluctuate and decrease around carrying capacity (K). 
+#However, across large time spans (or many simulations over 1000 years in following case), density becomes negligible. 
  
-# XXX need help figuring out if this code is right
+#Calculating individuals lost due to death and emigration across all simulations:
 dataLong <- as.data.frame(data) %>%
   mutate(year = 1:nrow(.)) %>% # add a column for the years explicitly
   pivot_longer(cols = -year, names_to = "sim", values_to = "popSize") %>% # now that we've pivoted to long format, each row is a unique year*simulation combo, with one value for population size. 
@@ -200,114 +206,52 @@ dataLong <- as.data.frame(data) %>%
   mutate(nLost = case_when(nLost < 0 ~ 0, # if a negative number of individuals were lost, then none were lost--population grew in that year.
                            TRUE ~ nLost))
 
-# Make a plot of the number of individuals lost vs. population density, across all simulations
+# Make a plot of the number of individuals lost vs. population density, across all simulations:
 dataLong %>%
   ggplot(aes(x = jitter(popSize), y = jitter(nLost)))+
   geom_point(alpha = 0.1, size = 0.7)+
   geom_smooth(method = "lm", se = T)+
   theme_classic()+
-  ylab("# lost to death or emigration")+
+  ylab("Individuals lost to death or emigration")+
   xlab("Population density")+
   ggtitle("Density-dependence of death/emigration")
 
-# XXX It looks like the model is density-independent, or at least close? I'm not positive that I did this right.
 
-# OPTIONAL:
+##### XXX It looks like the model is density-independent, or at least close? I'm not positive that I did this right.
 
-# 10. What would happen if the sex-ratio of the population was not assumed to be 50:50? What are some different ways that this might occur? Can respond in writing, or supplement with quantitative results.
+##### XXX Stella's comments: I believe you are correct, both in the calculation and plotting. I think the issue lies with the very high number of simulations and years.
+##### When nyears and nsims are both 1000, I think it's so high that the model becomes basically density-independent. If you play around with nyears and nsims
+##### you definitely see density-dependence of some sort. See following:
+nyears <- 10
+nsims <- 1000
+data <- matrix(NA, nrow = nyears, ncol = nsims)
 
-# 11. Can you figure out how Stacey & Taper calculated an overall population growth rate of lambda = 0.95 (on pg. 21)?
-
-# 11. Did we actually reproduce the original model accurately? Fig. 2 suggests that the maximum time to extinction in their set of 1000 runs was 49 years. How often in sets of 1000 runs do we observe maximum extinction times longer than 49 years?
-
-
-
-
-
-
-#### Remove effects of environmental variability: ####
-
-# Only need to run the simulation once - there's nothing stochastic about it now
-
-nyears<-1000
 years<-seq(1,nyears,1)
-population.data<-rep(NA,nyears)
 
-population.data[1]<-initial.pop
-
-#i<-2
-for(i in 2:nyears){
-  current.pop<-population.data[i-1]
-  
-  # calculate number of active territories:
-  #n.active <- floor(current.pop/2)
-  n.active <- round(current.pop/2)
-  
-  # pick reproductive rate:
-  current.fecundity <- mean(fecundity)
-  
-  # calculate number of young fledged:
-  n.fledged <- current.fecundity*n.active
-  
-  # calculate number of juveniles surviving the winter
-  current.s.J <-  mean(s.J)
-  #n.J <- floor(n.fledged*current.s.J)
-  n.J <- round(n.fledged*current.s.J,digits = 1)
-  
-  # calculate number of adults surviving the winter
-  current.s.A <- mean(s.A)
-  #n.A <- floor((2*n.active)*current.s.A)
-  n.A <- round((2*n.active)*current.s.A)
-  
-  # add up juveniles, adults, immigrants
-  next.pop <- n.J + n.A + n.I
-  
-  # if this value is larger than carrying capacity, reduce population size accordingly:
-  if(next.pop > K){
-    next.pop <- K
-  }
-  
-  # save result:
-  population.data[i] <- next.pop
-  
-  if(next.pop < 2){
-    break
-  }
+# run the model 1000 times, storing each results vector in a new column of the `data` df
+for(i in 1:nsims){
+  popData <- mod(nyears = nyears, fecundity = fecundity, s.A = s.A, s.J = s.J, 
+                 samp = T, initial.pop = initial.pop)
+  data[,i] <- popData
 }
 
-# visualize:
-plot(population.data~years, type='l',xlim=c(0,30))
+#Calculating individuals lost due to death and emigration across all simulations:
+dataLong <- as.data.frame(data) %>%
+  mutate(year = 1:nrow(.)) %>% # add a column for the years explicitly
+  pivot_longer(cols = -year, names_to = "sim", values_to = "popSize") %>% # now that we've pivoted to long format, each row is a unique year*simulation combo, with one value for population size. 
+  arrange(sim) %>% # show the entire first simulation first, then the entire second simulation, etc. in order of years.
+  # compute number of individuals lost in each year
+  group_by(sim) %>% # have to group by which simulation run it is, because otherwise it will try to compare the last year of one simulation and the first year of the next simulation, which makes no sense.
+  mutate(nLost = lag(popSize, 1) - popSize) %>% # subtract to get number lost
+  mutate(nLost = case_when(nLost < 0 ~ 0, # if a negative number of individuals were lost, then none were lost--population grew in that year.
+                           TRUE ~ nLost))
 
-# Why doesn't this exactly match Stacey & Taper? ("each population lasted for 30 yr")  Maybe something to do with rounding.
-
-bob<-population.data[2:length(population.data)]/population.data[1:I(length(population.data)-1)]
-mean(bob[!is.na(bob)])
-# 0.8756885
-
-mean(s.J)
-# 0.39375
-
-mean(s.A)
-# 0.5877778
-
-mean(fecundity)
-#2.011
-
-
-# Consider empirically estimating population growth rate lambda:
-j<-2
-lambda<-rep(NA,nsims)
-for(j in 1:nsims){
-  temp <- data[,j]
-  temp <- temp[!is.na(temp)]
-  temp <- temp[temp!=0]
-  
-  lambda[j] <- mean(temp[2:length(temp)]/temp[1:I(length(temp)-1)])
-}
-lambda
-
-hist(lambda)
-mean(lambda)
-median(lambda)
-
-# somewhere around 0.83
+# Make a plot of the number of individuals lost vs. population density, across all simulations:
+dataLong %>%
+  ggplot(aes(x = jitter(popSize), y = jitter(nLost)))+
+  geom_point(alpha = 0.1, size = 0.7)+
+  geom_smooth(method = "lm", se = T)+
+  theme_classic()+
+  ylab("Individuals lost to death or emigration")+
+  xlab("Population density")+
+  ggtitle("Density-dependence of death/emigration")
