@@ -190,13 +190,14 @@ median(et) # now the median is lower, at 12.
 #The basic simulation model is not actually completely density independent because, as shown above, the population will still fluctuate and decrease around carrying capacity (K). 
 
 dataLong <- as.data.frame(data) %>%
-  mutate(year = 1:nrow(.)) %>% # add a row index number
-  pivot_longer(cols = -year, names_to = "sim", values_to = "popSize") %>%
-  mutate(sim = as.numeric(str_remove(sim, "V"))) %>%
-  arrange(sim) %>%
+  mutate(year = 1:nrow(.)) %>% # add a column for the years explicitly
+  pivot_longer(cols = -year, names_to = "sim", values_to = "popSize") %>% # now that we've pivoted to long format, each row is a unique year*simulation combo, with one value for population size. 
+  arrange(sim) %>% # show the entire first simulation first, then the entire second simulation, etc. in order of years.
   # compute number of individuals lost in each year
   group_by(sim) %>% # have to group by which simulation run it is, because otherwise it will try to compare the last year of one simulation and the first year of the next simulation, which makes no sense.
-  mutate(nLost = lag(popSize, 1))
+  mutate(nLost = lag(popSize, 1) - popSize) %>% # subtract to get number lost
+  mutate(nLost = case_when(nLost < 0 ~ 0, # if a negative number of individuals were lost, then none were lost--population grew in that year.
+                           TRUE ~ nLost))
 
 # Make a plot of the number of individuals lost vs. population density, across all simulations
 dataLong %>%
@@ -208,7 +209,7 @@ dataLong %>%
   xlab("Population density")+
   ggtitle("Density-dependence of death/emigration")
 
-# There is a strong positive relationship between the population density and the number of individuals lost to emigration or mortality in that year. So the original model was definitely *not* density-independent.
+# It looks like the model is density-independent, or at least close? I'm not positive that I did this right.
 
 # OPTIONAL:
 
