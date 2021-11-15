@@ -2,7 +2,8 @@
 library(tidyverse) # please don't make me use base R
 library(here)
 
-# QUESTION 1: Make a theta-logistic model
+# Question 1 --------------------------------------------------------------
+# Make a theta-logistic model
 # Starting parameters
 r <- 0.2
 k <- 10
@@ -47,7 +48,8 @@ thetaLogistic <- function(nyears = 20, initial.pop = 1,
   return(pops)
 }
 
-# QUESTION 2
+
+# Question 2 --------------------------------------------------------------
 # Trying values of theta between 0 and 5
 thetas <- seq(0, 5, by = 1)
 
@@ -74,7 +76,9 @@ df %>%
 
 # As theta increases, the model's density-dependence gets stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there was no theta exponent, so the model reduces to the basic Ricker model.
 
-# QUESTION 4
+# Question 3 --------------------------------------------------------------
+
+# Question 4 --------------------------------------------------------------
 allee <- function(a = 0.2, nyears = 10, initial.pop){
   # Restrict a to be between 0 and 1
   if(a < 0 | a > 1){
@@ -125,7 +129,7 @@ ggsave(p, file = here("allee.png"), width = 9, height = 5)
 # When A = 0.2 and the initial population size is 0.5, the population goes extinct. In all other cases, the population grows, reaches 1, and stays there. In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
 # We... are not quite sure we understand why this happens.
 
-# QUESTION 5: What happens if you change the value of A?
+# Question 5 --------------------------------------------------------------
 plot(allee(initial.pop = 0.5, a = 1))
 plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high because the Allee effect is strong.
 plot(allee(initial.pop = 0.5, a = 0.5))
