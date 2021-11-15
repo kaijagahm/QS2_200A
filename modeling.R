@@ -15,8 +15,8 @@ pops <- rep(NA, nyears)
 pops[1] <- initial.pop
 
 for(i in 2:length(years)){ # loop through years
-  starting <- pops[i-1] # starting pop is the population in the previous year
-  new <- starting*exp(r*(1-(starting/k)^theta)) # new population for this year is the result of the theta-logistic equation (i.e. x(t+1) is 'new' here, and x(t) is 'starting' here.). We use the parameter values defined above.
+  starting <- pops[i-1] # starting is the population in the previous year
+  new <- starting*exp(r*(1-(starting/k)^theta)) # new population for this year, which is the result of the theta-logistic equation (i.e. x(t+1) is 'new' here, and x(t) is 'starting' here.). We use the parameter values defined above.
   pops[i] <- new
 }
 
@@ -40,8 +40,8 @@ thetaLogistic <- function(nyears = 20, initial.pop = 1,
   pops[1] <- initial.pop
   
   for(i in 2:length(years)){ # loop through years
-    starting <- pops[i-1] # starting pop is the population in the previous year
-    new <- starting*exp(r*(1-(starting/k)^theta)) # new population for this year is the result of the theta-logistic equation (i.e. x(t+1) is 'new' here, and x(t) is 'starting' here.). We use the parameter values defined above.
+    starting <- pops[i-1] # starting is the population in the previous year
+    new <- starting*exp(r*(1-(starting/k)^theta)) # new population for this year, which is the result of the theta-logistic equation (i.e. x(t+1) is 'new' here, and x(t) is 'starting' here.). We use the parameter values defined above.
     pops[i] <- new
   }
   return(pops)
@@ -69,9 +69,10 @@ df %>%
   theme_classic()+
   facet_wrap(~theta)+
   xlab("Year since start")+
-  ylab("Population size")
+  ylab("Population size")+
+  ggtitle("Theta-logistic population growth with varying thetas")
 
-# As theta increases, the model's density-dependence is stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there were no theta exponent, so the model reduces to the Ricker model.
+# As theta increases, the model's density-dependence gets stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there was no theta exponent, so the model reduces to the basic Ricker model.
 
 # QUESTION 4
 allee <- function(a = 0.2, nyears = 10, initial.pop){
@@ -85,7 +86,7 @@ allee <- function(a = 0.2, nyears = 10, initial.pop){
   pops[1] <- initial.pop
   
   for(i in 2:nyears){ # loop through years
-    starting <- pops[i-1] # starting pop is the population in the previous year
+    starting <- pops[i-1] # starting is the population in the previous year
     new <- starting + (1 - starting)*(starting - a) # calculate new population for this year
     pops[i] <- new
   }
@@ -121,11 +122,11 @@ p <- df %>%
 
 ggsave(p, file = here("allee.png"), width = 9, height = 5)
 
-# When A = 0.2 and the initial population size is 0.5, the population goes extinct. In all other cases, the population reaches 1 and stays there. In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
+# When A = 0.2 and the initial population size is 0.5, the population goes extinct. In all other cases, the population grows, reaches 1, and stays there. In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
 # We... are not quite sure we understand why this happens.
 
 # QUESTION 5: What happens if you change the value of A?
 plot(allee(initial.pop = 0.5, a = 1))
-plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high
+plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high because the Allee effect is strong.
 plot(allee(initial.pop = 0.5, a = 0.5))
-plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small.
+plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small because the Allee effect is weak.
