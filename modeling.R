@@ -77,6 +77,25 @@ df %>%
 # As theta increases, the model's density-dependence gets stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there was no theta exponent, so the model reduces to the basic Ricker model.
 
 # Question 3 --------------------------------------------------------------
+# OPTIONAL: run your model again for theta = 10 and theta = 20, and plot time series of your population dynamics. What patterns do you observe? What do you think is happening in the model?
+nyears <- 40 # going to run it over more years so we can see the longer-term dynamics.
+newdf <- data.frame(theta = paste0("theta = ", 
+                                   c(rep(10, nyears), rep(20, nyears))),
+                year = rep(1:nyears, 2), 
+                pop = c(thetaLogistic(theta = 10, nyears = 40),
+                        thetaLogistic(theta = 20, nyears = 40)))
+newdf %>%
+  ggplot(aes(x = year, y = pop))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  facet_wrap(~theta)+
+  xlab("Year since start")+
+  ylab("Population size")+
+  ggtitle("Theta-logistic population growth")
+
+# In both of these cases, we see the population grow until it hits the carrying capacity, and then it fluctuates around that level (k = 10). When theta = 20, the population initially grows more slowly than when theta = 10, but not by much. 
+# What's interesting is the pattern of fluctuations around the carrying capacity. When theta = 10, the population swings wildly around the carrying capacity, dropping down as low as 5 or 6 individuals before going back up to 12 or so. Over a long period of time, the swings don't seem to be dampening, they are just chaotic around the carrying capacity. When theta = 10, the swings are much smaller, and they seem to gradually dampen--it looks like the population is converging on the carrying capacity. 
 
 # Question 4 --------------------------------------------------------------
 allee <- function(a = 0.2, nyears = 10, initial.pop){
@@ -134,3 +153,7 @@ plot(allee(initial.pop = 0.5, a = 1))
 plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high because the Allee effect is strong.
 plot(allee(initial.pop = 0.5, a = 0.5))
 plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small because the Allee effect is weak.
+
+# Question 6 --------------------------------------------------------------
+
+
