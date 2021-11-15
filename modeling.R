@@ -155,5 +155,29 @@ plot(allee(initial.pop = 0.5, a = 0.5))
 plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small because the Allee effect is weak.
 
 # Question 6 --------------------------------------------------------------
+#Consider what would happen if you add immigration to this model. Can you contrive a scenario where a population that would otherwise go extinct due to the Allee effect is able to persist due to immigration?
 
-
+alleeWithImmigration <- function(a = 0.2, nyears = 10, initial.pop, imm){
+  # Restrict a to be between 0 and 1
+  if(a < 0 | a > 1){
+    stop("Parameter `a` must be between 0 and 1.")
+  }
+  
+  years <- seq(1, nyears, 1)
+  pops <- rep(NA, nyears) 
+  pops[1] <- initial.pop
+  
+  for(i in 2:nyears){ # loop through years
+    starting <- pops[i-1] # starting is the population in the previous year
+    new <- starting + (1 - starting)*(starting - a) + imm # calculate new population for this year
+    pops[i] <- new
+  }
+  return(pops) # the population size after nyears
+}
+  
+# Let's test some immigration rates and do a side-by-side comparison of the populations over time
+imms <- 1:25 # test immigration rates from 1 to 25
+init <- 100
+nyears <- 40
+plot(allee(a = 1, initial.pop = init, nyears = nyears))
+# things are weird here--I can't figure out what's going on with my allee effects.
