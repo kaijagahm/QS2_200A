@@ -14,8 +14,6 @@ initial.pop <- K # the authors assume that the population basically sits at the 
 nyears <- 25 # the study happened over 10 years
 n.I <- 0 # number of immigrants
 
-years <- seq(1, nyears, 1) # create vector from 1:25
-
 ### define the model ####
 
 mod <- function(nyears, fecundity, s.A, s.J, samp = T, initial.pop = initial.pop){
@@ -68,7 +66,8 @@ mod <- function(nyears, fecundity, s.A, s.J, samp = T, initial.pop = initial.pop
 run <- mod(nyears = nyears, fecundity = fecundity, s.A = s.A, s.J = s.J, 
             samp = T, initial.pop = initial.pop)
 
-plot(run ~ years, type = 'l')
+# a quick plot to see how it looks
+plot(run ~ seq(1, nyears, 1), type = 'l')
 
 # That was great, but is only one possible outcome for this particular model.
 
@@ -79,8 +78,6 @@ plot(run ~ years, type = 'l')
 nyears <- 1000
 nsims <- 1000
 data <- matrix(NA, nrow = nyears, ncol = nsims)
-
-years<-seq(1,nyears,1)
 
 # run the model 1000 times, storing each results vector in a new column of the `data` df
 for(i in 1:nsims){
@@ -95,10 +92,10 @@ head(data)
 
 # I made this plotting code into a function so we can use it over and over again.
 plotSims <- function(data){
-  plot(data[,1] ~ years,ylab="Population size", xlab="Years", main="Simulations of population growth over time",
+  plot(data[,1] ~ seq(1, nyears, 1), ylab="Population size", xlab="Years", main="Simulations of population growth over time",
   type='l',col=alpha('black',alpha=0.1),ylim=c(0,55),xlim=c(0,100))
   for(j in 2:nsims){
-    lines(data[,j]~years,type='l',col=alpha('black',alpha=0.1))
+    lines(data[,j]~seq(1, nyears, 1), type='l', col=alpha('black',alpha=0.1))
   }
 }
 
@@ -112,7 +109,7 @@ getExtinctionTimes <- function(data){
   for(j in 1:nsims){
     
     # make a temporary data set for a single simulated time series
-    temporary <- data.frame(years,pops=data[,j])
+    temporary <- data.frame(years = seq(1, nyears, 1), pops=data[,j])
     
     # drop all rows where population sizes are NA (ie, population extinct)
     temporary <- na.omit(temporary)  
@@ -126,7 +123,7 @@ getExtinctionTimes <- function(data){
 et <- getExtinctionTimes(data)
 
 # Figure #2 in Stacey & Taper 1992
-hist(et, breaks = seq(1, max(et), 2), main= "Time to extinction", xlab="Years")
+hist(et, breaks = seq(min(et), max(et), 2), main= "Time to extinction", xlab="Years")
 
 median(et)
 
@@ -216,17 +213,12 @@ dataLong %>%
   xlab("Population density")+
   ggtitle("Density-dependence of death/emigration")
 
+# The model looks like it is density-independent when we run it over 1000 simulations and 1000 years. 
 
-##### XXX It looks like the model is density-independent, or at least close? I'm not positive that I did this right.
-
-##### XXX Stella's comments: I believe you are correct, both in the calculation and plotting. I think the issue lies with the very high number of simulations and years.
-##### When nyears and nsims are both 1000, I think it's so high that the model becomes basically density-independent. If you play around with nyears and nsims
-##### you definitely see density-dependence of some sort. See following:
+# But if we reduce the number of years to 10, the model shows negative density-dependence: with a higher population density, fewer individuals are lost to death or emigration. See the following: 
 nyears <- 10
 nsims <- 1000
 data <- matrix(NA, nrow = nyears, ncol = nsims)
-
-years<-seq(1,nyears,1)
 
 # run the model 1000 times, storing each results vector in a new column of the `data` df
 for(i in 1:nsims){
@@ -255,3 +247,5 @@ dataLong %>%
   ylab("Individuals lost to death or emigration")+
   xlab("Population density")+
   ggtitle("Density-dependence of death/emigration")
+
+# XXX Don't understand why this is happening. Why would we have negative density dependence? And why would it behave differently over 10 vs 1000 years?
