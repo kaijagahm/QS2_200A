@@ -148,14 +148,18 @@ p <- df %>%
 
 ggsave(p, file = here("allee.png"), width = 9, height = 5)
 
-# When A = 0.2 and the initial population size is 0.5, the population goes extinct. In all other cases, the population grows, reaches 1, and stays there. In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
+# When A = 0.2 and the initial population size is 0.5, the population goes extinct. 
+# In most other cases, the population reaches 1 and stays there. 
+# With an initial population size of 1, the population seems to be stable for the forseeable future. 
+# In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
 # We... are not quite sure we understand why this happens.
+# We are also wondering why at most A's the population drops around 10 years. 
 
-# Question 5 --------------------------------------------------------------
-plot(allee(initial.pop = 0.5, a = 1))
-plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high because the Allee effect is strong.
-plot(allee(initial.pop = 0.5, a = 0.5))
-plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small because the Allee effect is weak.
+# QUESTION 5: What happens if you change the value of A?
+plot(allee(initial.pop = 0.5, a = 1)) #The population is stable at carrying capacity until year 10
+plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high ***<-Explain? I am not seeing a difference between 1 and 0.9-KH
+plot(allee(initial.pop = 0.5, a = 0.5)) # the population is completely stable and flat. 
+plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small.Reaches carrying capacity.
 
 # Question 6 --------------------------------------------------------------
 #Consider what would happen if you add immigration to this model. Can you contrive a scenario where a population that would otherwise go extinct due to the Allee effect is able to persist due to immigration?
