@@ -74,7 +74,10 @@ df %>%
   ylab("Population size")+
   ggtitle("Theta-logistic population growth with varying thetas")
 
-# As theta increases, the model's density-dependence gets stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there was no theta exponent, so the model reduces to the basic Ricker model.
+# As theta increases, the model's density-dependence is stronger--the population size slows down more with increasing density than it would have without the theta term.
+# So when theta = 1, it's as if there were no theta exponent, so the model reduces to the Ricker model.
+# In general, As theta increases, the point at which the population approaches their carrying capacity decreases.
+# Populations with larger theta's will reach carrying capacity faster than those with smaller theta's.
 
 # Question 3 --------------------------------------------------------------
 # OPTIONAL: run your model again for theta = 10 and theta = 20, and plot time series of your population dynamics. What patterns do you observe? What do you think is happening in the model?
