@@ -74,7 +74,10 @@ df %>%
   ylab("Population size")+
   ggtitle("Theta-logistic population growth with varying thetas")
 
-# As theta increases, the model's density-dependence gets stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there was no theta exponent, so the model reduces to the basic Ricker model.
+# As theta increases, the model's density-dependence is stronger--the population size slows down more with increasing density than it would have without the theta term.
+# So when theta = 1, it's as if there were no theta exponent, so the model reduces to the Ricker model.
+# In general, As theta increases, the point at which the population approaches their carrying capacity decreases.
+# Populations with larger theta's will reach carrying capacity faster than those with smaller theta's.
 
 # Question 3 --------------------------------------------------------------
 # OPTIONAL: run your model again for theta = 10 and theta = 20, and plot time series of your population dynamics. What patterns do you observe? What do you think is happening in the model?
@@ -111,6 +114,9 @@ allee <- function(a = 0.2, nyears = 10, initial.pop){
   for(i in 2:nyears){ # loop through years
     starting <- pops[i-1] # starting is the population in the previous year
     new <- starting + (1 - starting)*(starting - a) # calculate new population for this year
+    if(new < 0){
+      new <- 0
+    }
     pops[i] <- new
   }
   return(pops) # the population size after nyears
@@ -145,14 +151,18 @@ p <- df %>%
 
 ggsave(p, file = here("allee.png"), width = 9, height = 5)
 
-# When A = 0.2 and the initial population size is 0.5, the population goes extinct. In all other cases, the population grows, reaches 1, and stays there. In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
+# When A = 0.2 and the initial population size is 0.5, the population goes extinct. 
+# In most other cases, the population reaches 1 and stays there. 
+# With an initial population size of 1, the population seems to be stable for the forseeable future. 
+# In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
 # We... are not quite sure we understand why this happens.
+# We are also wondering why at most A's the population drops around 10 years. 
 
-# Question 5 --------------------------------------------------------------
-plot(allee(initial.pop = 0.5, a = 1))
-plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high because the Allee effect is strong.
-plot(allee(initial.pop = 0.5, a = 0.5))
-plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small because the Allee effect is weak.
+# QUESTION 5: What happens if you change the value of A?
+plot(allee(initial.pop = 0.5, a = 1)) #The population is stable at carrying capacity until year 10
+plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high ***<-Explain? I am not seeing a difference between 1 and 0.9-KH
+plot(allee(initial.pop = 0.5, a = 0.5)) # the population is completely stable and flat. 
+plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small.Reaches carrying capacity.
 
 # Question 6 --------------------------------------------------------------
 #Consider what would happen if you add immigration to this model. Can you contrive a scenario where a population that would otherwise go extinct due to the Allee effect is able to persist due to immigration?
