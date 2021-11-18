@@ -114,6 +114,9 @@ allee <- function(a = 0.2, nyears = 10, initial.pop){
   for(i in 2:nyears){ # loop through years
     starting <- pops[i-1] # starting is the population in the previous year
     new <- starting + (1 - starting)*(starting - a) # calculate new population for this year
+    if(new < 0){
+      new <- 0
+    }
     pops[i] <- new
   }
   return(pops) # the population size after nyears
