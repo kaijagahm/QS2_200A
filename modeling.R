@@ -180,6 +180,9 @@ alleeWithImmigration <- function(a = 0.2, nyears = 10, initial.pop, imm){
   for(i in 2:nyears){ # loop through years
     starting <- pops[i-1] # starting is the population in the previous year
     new <- starting + (1 - starting)*(starting - a) + imm # calculate new population for this year
+    if(new < 0){
+      new <- 0
+    }
     pops[i] <- new
   }
   return(pops) # the population size after nyears
@@ -187,7 +190,28 @@ alleeWithImmigration <- function(a = 0.2, nyears = 10, initial.pop, imm){
   
 # Let's test some immigration rates and do a side-by-side comparison of the populations over time
 imms <- 1:25 # test immigration rates from 1 to 25
-init <- 100
+init <- 1
 nyears <- 40
-plot(allee(a = 1, initial.pop = init, nyears = nyears))
+a <- 0.1
+dat <- data.frame()
 # things are weird here--I can't figure out what's going on with my allee effects.
+
+# Try this model for each value of # immigrants between 1 and 25.
+for(i in 1:length(imms)){
+  pops <- alleeWithImmigration(a = a, initial.pop = init,
+                              nyears = nyears, imm = imms[i])
+  data <- data.frame(year = 1:nyears,
+                     pop = pops,
+                     imm = imms[i])
+  dat <- rbind(dat, data)
+}
+
+# Make a plot of the different immigration values
+dat %>%
+  ggplot(aes(x = year, y = pop))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(~imm)
+
+# This is a really weird pattern! Looks like in cases where the population would go to zero (e.g. when the initial population size is 0.5), a steady flow of immigrants can sort of rescue it, but the population will continuously fluctuate between zero and the number of immigrants, rather than experiencing meaningful growth.
+
