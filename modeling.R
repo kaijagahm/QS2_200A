@@ -151,12 +151,10 @@ p <- df %>%
 
 ggsave(p, file = here("allee.png"), width = 9, height = 5)
 
-# When A = 0.2 and the initial population size is 0.5, the population goes extinct. 
-# In most other cases, the population reaches 1 and stays there. 
+# When A = 0.2 and the initial population size is 0.5, the population goes extinct, but in most other cases, the population reaches 1 and stays there. 
 # With an initial population size of 1, the population seems to be stable for the forseeable future. 
-# In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
-# We... are not quite sure we understand why this happens.
-# We are also wondering why at most A's the population drops around 10 years. 
+# In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again. These jumps across time are occurring because this model is a discrete time model and not continuous.
+# We are wondering why at most A's the population drops around 10 years. 
 
 # QUESTION 5: What happens if you change the value of A?
 plot(allee(initial.pop = 0.5, a = 1)) #The population is stable at carrying capacity until year 10
