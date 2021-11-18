@@ -2,7 +2,8 @@
 library(tidyverse) # please don't make me use base R
 library(here)
 
-# QUESTION 1: Make a theta-logistic model
+# Question 1 --------------------------------------------------------------
+# Make a theta-logistic model
 # Starting parameters
 r <- 0.2
 k <- 10
@@ -47,7 +48,8 @@ thetaLogistic <- function(nyears = 20, initial.pop = 1,
   return(pops)
 }
 
-# QUESTION 2
+
+# Question 2 --------------------------------------------------------------
 # Trying values of theta between 0 and 5
 thetas <- seq(0, 5, by = 1)
 
@@ -72,9 +74,33 @@ df %>%
   ylab("Population size")+
   ggtitle("Theta-logistic population growth with varying thetas")
 
-# As theta increases, the model's density-dependence gets stronger--the population growth slows down *more* with increasing density than it would have without the theta term. So when theta = 1, it's as if there was no theta exponent, so the model reduces to the basic Ricker model.
+# As theta increases, the model's density-dependence is stronger--the population size slows down more with increasing density than it would have without the theta term.
+# So when theta = 1, it's as if there were no theta exponent, so the model reduces to the Ricker model.
+# In general, As theta increases, the point at which the population approaches their carrying capacity decreases.
+# Populations with larger theta's will reach carrying capacity faster than those with smaller theta's.
 
-# QUESTION 4
+# Question 3 --------------------------------------------------------------
+# OPTIONAL: run your model again for theta = 10 and theta = 20, and plot time series of your population dynamics. What patterns do you observe? What do you think is happening in the model?
+nyears <- 40 # going to run it over more years so we can see the longer-term dynamics.
+newdf <- data.frame(theta = paste0("theta = ", 
+                                   c(rep(10, nyears), rep(20, nyears))),
+                year = rep(1:nyears, 2), 
+                pop = c(thetaLogistic(theta = 10, nyears = 40),
+                        thetaLogistic(theta = 20, nyears = 40)))
+newdf %>%
+  ggplot(aes(x = year, y = pop))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  facet_wrap(~theta)+
+  xlab("Year since start")+
+  ylab("Population size")+
+  ggtitle("Theta-logistic population growth")
+
+# In both of these cases, we see the population grow until it hits the carrying capacity, and then it fluctuates around that level (k = 10). When theta = 20, the population initially grows more slowly than when theta = 10, but not by much. 
+# What's interesting is the pattern of fluctuations around the carrying capacity. When theta = 10, the population swings wildly around the carrying capacity, dropping down as low as 5 or 6 individuals before going back up to 12 or so. Over a long period of time, the swings don't seem to be dampening, they are just chaotic around the carrying capacity. When theta = 10, the swings are much smaller, and they seem to gradually dampen--it looks like the population is converging on the carrying capacity. 
+
+# Question 4 --------------------------------------------------------------
 allee <- function(a = 0.2, nyears = 10, initial.pop){
   # Restrict a to be between 0 and 1
   if(a < 0 | a > 1){
@@ -125,11 +151,43 @@ p <- df %>%
 
 ggsave(p, file = here("allee.png"), width = 9, height = 5)
 
-# When A = 0.2 and the initial population size is 0.5, the population goes extinct. In all other cases, the population grows, reaches 1, and stays there. In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
+# When A = 0.2 and the initial population size is 0.5, the population goes extinct. 
+# In most other cases, the population reaches 1 and stays there. 
+# With an initial population size of 1, the population seems to be stable for the forseeable future. 
+# In a few cases, the population fluctuates back down after reaching 1, but then it jumps back up to 1 again.
 # We... are not quite sure we understand why this happens.
+# We are also wondering why at most A's the population drops around 10 years. 
 
 # QUESTION 5: What happens if you change the value of A?
-plot(allee(initial.pop = 0.5, a = 1))
-plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high because the Allee effect is strong.
-plot(allee(initial.pop = 0.5, a = 0.5))
-plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small because the Allee effect is weak.
+plot(allee(initial.pop = 0.5, a = 1)) #The population is stable at carrying capacity until year 10
+plot(allee(initial.pop = 0.5, a = 0.9)) # the population goes extinct when A is kind of high ***<-Explain? I am not seeing a difference between 1 and 0.9-KH
+plot(allee(initial.pop = 0.5, a = 0.5)) # the population is completely stable and flat. 
+plot(allee(initial.pop = 0.5, a = 0.1)) # the population doesn't go extinct when A is small.Reaches carrying capacity.
+
+# Question 6 --------------------------------------------------------------
+#Consider what would happen if you add immigration to this model. Can you contrive a scenario where a population that would otherwise go extinct due to the Allee effect is able to persist due to immigration?
+
+alleeWithImmigration <- function(a = 0.2, nyears = 10, initial.pop, imm){
+  # Restrict a to be between 0 and 1
+  if(a < 0 | a > 1){
+    stop("Parameter `a` must be between 0 and 1.")
+  }
+  
+  years <- seq(1, nyears, 1)
+  pops <- rep(NA, nyears) 
+  pops[1] <- initial.pop
+  
+  for(i in 2:nyears){ # loop through years
+    starting <- pops[i-1] # starting is the population in the previous year
+    new <- starting + (1 - starting)*(starting - a) + imm # calculate new population for this year
+    pops[i] <- new
+  }
+  return(pops) # the population size after nyears
+}
+  
+# Let's test some immigration rates and do a side-by-side comparison of the populations over time
+imms <- 1:25 # test immigration rates from 1 to 25
+init <- 100
+nyears <- 40
+plot(allee(a = 1, initial.pop = init, nyears = nyears))
+# things are weird here--I can't figure out what's going on with my allee effects.
